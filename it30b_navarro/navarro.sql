@@ -20,7 +20,7 @@ create table booking (booking_id int (10));
 
 
     CREATE TABLE borrow (
-    Borrow_ID int(11) NOT NULL,
+    Borrow_ID int(11) NOT NULL,gio
     Student_ID int(10) NOT NULL,
     Book_ID int(10) NOT NULL,
     Borrow_Date date NOT NULL,
