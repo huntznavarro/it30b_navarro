@@ -35,7 +35,7 @@ CREATE TABLE `students` (
   `student_first_name` varchar(50) NOT NULL,
   `student_last_name` varchar(50) NOT NULL,
   `student_course` varchar(50) NOT NULL,
-  `student_created_at` timestamp NULL DEFAULT NULL,
+  `student_created_at`  timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`student_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
