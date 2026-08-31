@@ -68,6 +68,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $messageType = 'error';
         }
     }
+     if ($action === 'Return Book') {
+
+        $borrow_id = $_POST['borrow_id'];
+
+        $stmt = $pdo->prepare("
+            UPDATE borrow
+            SET borrow_return_date = CURDATE(), status = 'returned'
+            WHERE borrow_id = ? AND borrow_return_date IS NULL
+        ");
+
+        $success = $stmt->execute([$borrow_id]);
+
+        if ($success) {
+            logActivity($pdo, $user_id, $user_email, 'Return Book', 'success');
+            $message = 'Book returned successfully and activity logged.';
+            $messageType = 'success';
+            $borrowedBooks = getBorrowedBooks($pdo);
+        } else {
+            $message = 'Something went wrong while returning the book.';
+            $messageType = 'error';
+        }
+    }
+}
+
 
 
 ?>
