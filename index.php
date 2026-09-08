@@ -98,6 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
 <meta charset="UTF-8">
 <title>Library Book Borrowing System</title>
+<!--
 <style>
     * { box-sizing: border-box; }
 
@@ -240,6 +241,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         padding: 10px 0;
     }
 </style>
+-->
 </head>
 <body>
 
