@@ -100,8 +100,9 @@ SELECT * FROM students
     LIMIT 2;
 
 
-
     UPDATE books
 SET book_title='NOLIME TANGERE',
     book_author='JOSE RIZAL'
 WHERE  book_id=2;
+
+
