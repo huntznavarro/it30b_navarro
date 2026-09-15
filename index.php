@@ -13,8 +13,19 @@ $books = $pdo->query("
     FROM books
 ")->fetchALL(PDO::FETCH_ASSOC);
 
-function getBorrowedBooks($pdo){
-    return $pdo->query("
+function getBorrowedBooks($pdo, $sortColumn = 'due_date', $sortDirection = 'ASC'){
+    $allowedColumns = [
+        'student' => 's.student_last_name',
+        'book' => 'bk.book_title',
+        'borrow_date' => 'b.borrow_date',
+        'due_date' => 'b.due_date',
+        'status' => 'b.status'
+    ];
+
+    $column = $allowedColumns[$sortColumn] ?? 'b.due_date';
+    $direction = strtoupper($sortDirection) === 'DESC' ? 'DESC' : 'ASC';
+
+    $sql = "
         SELECT
              b.borrow_id,
             s.student_first_name,
@@ -28,12 +39,23 @@ function getBorrowedBooks($pdo){
         JOIN students s ON b.student_id = s.student_id
         JOIN books bk ON b.book_id = bk.book_id
         WHERE b.borrow_return_date IS NULL
-        ORDER BY b.due_date ASC
-    ")->fetchAll(PDO::FETCH_ASSOC);
-
-  
+        ORDER BY $column $direction
+    ";
+    return $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
 }
-    $borrowedBooks = getBorrowedBooks($pdo);
+
+    $sortColumn = $_GET['sort'] ?? 'due_date';
+    $sortDirection = $_GET['dir'] ?? 'ASC';
+    $borrowedBooks = getBorrowedBooks($pdo, $sortColumn, $sortDirection);
+
+    function buildSortLink($column, $currentSort, $currentDir, $label){
+        $newDir = ($column === $currentSort && $currentDir === 'ASC') ? 'DESC' : 'ASC';
+        $arrow = '';
+        if ($column === $currentSort) {
+            $arrow = $currentDir === 'ASC' ? ' ▲' : ' ▼';
+        }
+        return '<a href="?sort=' . $column . '&dir=' . $newDir . '" style="color:inherit;text-decoration:none;">' . $label . $arrow . '</a>';
+    }
 
 $message = '';
 $messageType = '';
@@ -98,7 +120,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
 <meta charset="UTF-8">
 <title>Library Book Borrowing System</title>
-<!--
+
 <style>
     * { box-sizing: border-box; }
 
@@ -241,7 +263,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         padding: 10px 0;
     }
 </style>
--->
+
 </head>
 <body>
 
@@ -308,11 +330,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php if (count($borrowedBooks) > 0): ?>
             <table>
                 <tr>
-                    <th>Student</th>
-                    <th>Book</th>
-                    <th>Borrowed On</th>
-                    <th>Due Date</th>
-                    <th>Status</th>
+                    <th><?= buildSortLink('student', $sortColumn, $sortDirection, 'Student') ?></th>
+                    <th><?= buildSortLink('book', $sortColumn, $sortDirection, 'Book') ?></th>
+                    <th><?= buildSortLink('borrow_date', $sortColumn, $sortDirection, 'Borrowed On') ?></th>
+                    <th><?= buildSortLink('due_date', $sortColumn, $sortDirection, 'Due Date') ?></th>
+                    <th><?= buildSortLink('status', $sortColumn, $sortDirection, 'Status') ?></th>
                 </tr>
                 <?php foreach ($borrowedBooks as $b):
                     $isOverdue = strtotime($b['due_date']) < strtotime(date('Y-m-d'));
