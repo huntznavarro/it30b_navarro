@@ -16,7 +16,7 @@ $options =[
 ];
 
 try{
-    $pdo = new PDO($dsn, $user, $password, $option);
+    $pdo = new PDO($dsn,$user,$pass,$options);
     echo 'connection successful';
 
 }catch(PDOException$e){
