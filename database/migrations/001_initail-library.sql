@@ -12,8 +12,6 @@ CREATE TABLE IF NOT EXIST students(
         DEFAULT CURRENT_TIMESTAMP
 
 
-
-
 )ENGINE=innoDB
 DEFAULT CHARSET=utf8mb4
 COLLATE=utf8mb4_general_ci;
@@ -47,16 +45,16 @@ CREATE TABLE IF NOT EXIST borrow(
     student_id INT NOT NULL,
     book_id INT NOT NULL,
 
-    --borrow timestamp not null by default
+    -- borrow timestamp not null by default
     Borrow_date TIMESTAMP NOT NULL
         DEFAULT CURRENT_TIMESTAMP,
 
-        --borrow return timestamp null by default
+        -- borrow return timestamp null by default
         borrow_return_date TIMESTAMP NULL
         DEFAULT NULL,
 
 
-        --borrow
+        -- borrow
 
         CONSTRAINT fk-borrow_student
         FOREIGN KEY (student_id)
