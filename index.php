@@ -336,7 +336,7 @@ if($section==='books' && $action==='update'){
 
         <?php else: ?>
 
-            <table>
+            <table border="1" cellpadding="8">
 
             <thead>
                 <tr>
