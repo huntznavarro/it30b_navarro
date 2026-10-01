@@ -212,6 +212,112 @@ if($section==='books' && $action==='update'){
     }
 }
 
+// RETREIVE BOOKS
+if($section== 'borrow'){
+    //retreive students
+    $stmt = $pdo->prepare("
+        SELECT
+            student_id,
+            student_first_name,
+            student_last_name
+        FROM students
+        ORDER BY student_last_name, student_first_name
+
+    ");
+    $students = $stmt->fetchALL();
+
+
+     //retreive BOOKS
+    $stmt = $pdo->prepare("
+        SELECT
+            book_id,
+            book_title,
+            book_author
+        FROM books
+        ORDER BY book_title
+        
+
+    ");
+    $books = $stmt->fetchALL();
+}
+
+//CREATE BORROW
+IF($section==='borrow' && $action==='create'){
+
+if($_SERVER['REQUEST_METHOD'] === 'POST'){
+
+        $student_id = (int) ($_POST['student_id'] ?? 00);
+         $book_id = (int) ($_POST['book_id'] ?? 00);
+
+         if($studentId >0 && $_bookId >0){
+
+            //check if student has unretruned book
+            $stmt = $pdo->prepare("
+            SELECT borrow_id
+            FROM borrow
+            WHERE student_id=?
+                AND borrow_return_date is NULL
+            LIMIT 1 
+            ");
+
+            $stmt->execute([$student_id]);
+
+            $studentBorrow = $stmt->fetch();
+            if (studentBorrow){
+                $_SESSION['alert'] = 'this student cannot borrow another book beacuse a prevoius book has return';
+
+
+            }else{
+                //  check if a book is already borrowed
+                $stmt = $pdo->prepare("
+                SELECT borrow_id
+                FROM borrow
+                WHERE Book_id = ?
+                    AND borrow_return_date IS NULL
+                LIMIT 1
+                ");
+                
+                $stmt->execute(['borrow_ID']);
+
+                $bookBorrow = $stmt->fetch();
+
+                if($bookBorrow){
+                    $_SESSION['alert'] = 'This book cannot be borrowed becuase it has not been returned';
+                }else{
+                        //Create borrow record finally!
+                        $stmt = $pdo->prepare("
+                        INSERT INTO borrow(
+                        student_id,
+                        book_id
+                        )
+                        VALUES(?,?)
+                        ");
+
+                        $stmt->execute([
+                            $student_Id,
+                            $book_Id
+                        ]);
+                        $_SESSION ['alert'] = 'Book Borrowed successfully.';
+
+                }
+
+            }
+            header("Location: index.php?section=borrow");
+            exit;
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
 ?>
 
 <!DOCTYPE html>
@@ -410,7 +516,7 @@ if($section==='books' && $action==='update'){
 
         <?php if($action==='create'): ?>
 
-            <h2>Create Book</h2>
+            <h1>Create Book</h1>
 
             <form method="POST">
 
@@ -564,8 +670,28 @@ if($section==='books' && $action==='update'){
     <?php if($section === 'borrow'):?>
 
         <h1>Borrow</h1>
+        <p>
+            <a href="index.php?section=borrow$action=create">
+                Borrow a Book
+            </a>
 
+        </p>
+        <?php if($action=='create'): ?>
+            <h2>Borrow a Book</h2>
+            <form method="POST">
+            </form>
+        <?php endif; ?>
     <?php endif; ?>
 
+
 </body>
+    <?php if(isset($_SESSION['alert'])): ?>
+        <script>
+            alert(<= json_encode($_SESSION['alert']) ?>); 
+        </script>
+
+        <?php unset ($_SESSION['alert']); ?>
+       
+        <?php endif;?>
+
 </html>
