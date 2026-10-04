@@ -412,7 +412,7 @@ $action = $_GET['action'] ?? '';
             </form>
 
         <?php else: ?>
-            <table>
+          <table border="1" cellpadding="10">
             <thead>
                 <tr>
                     <th>ID</th>
@@ -542,7 +542,7 @@ $action = $_GET['action'] ?? '';
                 </a>
             </form>
         <?php else: ?>
-            <table>
+          <table border="1" cellpadding="10">
             <thead>
                 <tr>
                     <th>ID</th>
