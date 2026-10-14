@@ -2,7 +2,7 @@
 SELECT
     br.borrow_id;
 
-    --student full name
+    -- student full name
 
     CONCAT(
         s.student_first_name,
@@ -18,7 +18,7 @@ SELECT
     b.book_author,
     b.book_category,
 
-    --borrow date 
+    -- borrow date 
     br.borrow_date
     FROM borrow br
     INNER JOIN students s

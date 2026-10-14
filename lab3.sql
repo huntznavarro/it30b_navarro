@@ -11,7 +11,7 @@ SELECT  br.borrow_id, s.student_id,
     ALTER TABLE borrow
     MODIFY borrow_return_date TIMESTAMP NULL DEFAULT NULL;
 
-    UPDATE borrow
+    UPDATE borrow   
     SET borrow_return_date = NULL
     WHERE borrow_return_date = '2026-08-25 08:18:28';
 
