@@ -29,9 +29,9 @@ $section = $_GET['section'] ?? 'students';
 // CRUD Operations
 $action = $_GET['action'] ?? '';
 
-//-----------------------------------------------------------
+
 // Students
-//-----------------------------------------------------------
+
 
 // Fetch students
 if($section === 'students'){
@@ -400,16 +400,16 @@ if($section==='borrow' && $action==='return'){
                     <label>First Name</label>
                     <br>
                     <input type="text"
-                           name="student_first_name"
-                           required
+                        name="student_first_name"
+                        required
                     />
                 </p>
                 <p>
                     <label>Last Name</label>
                     <br>
                     <input type="text"
-                           name="student_last_name"
-                           required
+                        name="student_last_name"
+                        required
                     />
                 </p>
                 
@@ -417,8 +417,8 @@ if($section==='borrow' && $action==='return'){
                     <label>Course</label>
                     <br>
                     <input type="text"
-                           name="student_course"
-                           required
+                        name="student_course"
+                        required
                     />
                 </p>
 
@@ -440,18 +440,18 @@ if($section==='borrow' && $action==='return'){
                     <label>First Name</label>
                     <br>
                     <input type="text"
-                           name="student_first_name"
-                           value="<?=  htmlspecialchars($student['student_first_name'])?>"
-                           required
+                        name="student_first_name"
+                        value="<?=  htmlspecialchars($student['student_first_name'])?>"
+                        required
                     />
                 </p>
                 <p>
                     <label>Last Name</label>
                     <br>
                     <input type="text"
-                           name="student_last_name"
-                           value="<?=  htmlspecialchars($student['student_last_name'])?>"
-                           required
+                        name="student_last_name"
+                        value="<?=  htmlspecialchars($student['student_last_name'])?>"
+                        required
                     />
                 </p>
                 
@@ -459,9 +459,9 @@ if($section==='borrow' && $action==='return'){
                     <label>Course</label>
                     <br>
                     <input type="text"
-                           name="student_course"
-                           value="<?=  htmlspecialchars($student['student_course'])?>"
-                           required
+                        name="student_course"
+                        value="<?=  htmlspecialchars($student['student_course'])?>"
+                        required
                     />
                 </p>
 
@@ -476,7 +476,7 @@ if($section==='borrow' && $action==='return'){
 
         <?php else: ?>
 
-            <table>
+        <table border="1" cellpadding="8">
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -518,7 +518,7 @@ if($section==='borrow' && $action==='return'){
 
         <?php endif; ?>
 
-       
+    
     <?php endif; ?>
 
     <?php if($section==='books'): ?>
