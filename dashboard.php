@@ -66,6 +66,21 @@ for ($i = 6; $i >= 0; $i--) {
     $dayLabels[] = date('D', strtotime($date));
     $dailyBorrows[] = $borrowByDay[$date] ?? 0;
 }
+// ---------- 4. RECENT BORROWS ----------
+
+$recentStmt = $pdo->query("
+    SELECT
+        s.student_first_name,
+        s.student_last_name,
+        b.book_title,
+        br.borrow_return_date
+    FROM borrow br
+    INNER JOIN students s ON br.student_id = s.student_id
+    INNER JOIN books b ON br.book_id = b.book_id
+    ORDER BY br.borrow_id DESC
+    LIMIT 5
+");
+$recentBorrows = $recentStmt->fetchAll();
 ?>
 
 <!DOCTYPE html>
@@ -382,6 +397,43 @@ for ($i = 6; $i >= 0; $i--) {
     </div>
 </div>
 
+<!-- RECENT BORROWS -->
+<div class="recent-borrows">
+    <div class="recent-header">
+        <h3>
+            <span class="material-icons">receipt_long</span>
+            Recent borrows
+        </h3>
+        <a href="#">
+            view all
+            <span class="material-icons">arrow_forward</span>
+        </a>
+    </div>
+    <?php if (empty($recentBorrows)): ?>
+        <div class="borrow-row" style="color:#9e9e9e; justify-content:center;">
+            No borrow records yet.
+        </div>
+    <?php else: ?>
+        <?php foreach ($recentBorrows as $row): ?>
+            <div class="borrow-row">
+                <div class="borrow-student">
+                    <span class="material-icons">person</span>
+                    <?= htmlspecialchars($row['student_first_name'] . ' ' . $row['student_last_name']) ?>
+                </div>
+                <div class="borrow-book">
+                    <span class="material-icons">book</span>
+                    <?= htmlspecialchars($row['book_title']) ?>
+                </div>
+                <div class="borrow-status <?= $row['borrow_return_date'] ? 'returned' : 'borrowed' ?>">
+                    <span class="material-icons">
+                        <?= $row['borrow_return_date'] ? 'check_circle' : 'schedule' ?>
+                    </span>
+                    <?= $row['borrow_return_date'] ? 'Returned' : 'Borrowed' ?>
+                </div>
+            </div>
+        <?php endforeach; ?>
+    <?php endif; ?>
+</div>
 
     
 </body>
