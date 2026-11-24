@@ -1,25 +1,25 @@
 <?php 
-// Database Connection
 $host = 'localhost';
-$db = 'it30b_lab_db';
-$user ='root';
+$db   = 'it30b_lab_db';
+$user = 'root';
 $pass = '';
 $charset = 'utf8mb4';
 
-$dsn = "mysql:host=$host; dbname=$db; charset=$charset";
+$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
 
 $options = [
-    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-    PDO::ATTR_EMULATE_PREPARES=>false
+    PDO::ATTR_EMULATE_PREPARES   => false,
 ];
 
-try{
-    $pdo = new PDO($dsn,$user,$pass,$options);
-}catch(PDOException $e){
-    die("Database connection failed" . $e->getMessage());
+try {
+    $pdo = new PDO($dsn, $user, $pass, $options);
+} catch (PDOException $e) {
+    die("Database connection failed: " . $e->getMessage());
+}
 
-    // ---------- 1. KPI COUNTS ----------
+// ---------- 1. KPI COUNTS ----------
 $studentCount  = $pdo->query("SELECT COUNT(*) FROM students")->fetchColumn();
 $bookCount     = $pdo->query("SELECT COUNT(*) FROM books")->fetchColumn();
 $totalBorrows  = $pdo->query("SELECT COUNT(*) FROM borrow")->fetchColumn();
@@ -38,15 +38,38 @@ while ($row = $catStmt->fetch()) {
     $categories[]     = $row['book_category'];
     $categoryCounts[] = (int) $row['cnt'];
 }
+
+// ---------- 3. BORROW ACTIVITY LAST 7 DAYS ----------
+
+$dailyStmt = $pdo->query("
+    SELECT DATE(borrow_date) AS day, COUNT(*) AS cnt
+    FROM borrow
+    WHERE borrow_date >= CURDATE() - INTERVAL 6 DAY
+    GROUP BY DATE(borrow_date)
+    ORDER BY day ASC
+");
+
+$borrowByDay = [];
+
+while ($row = $dailyStmt->fetch()) {
+    $borrowByDay[$row['day']] = (int) $row['cnt'];
+}
+
+// Generate labels and counts for the last 7 days
+
+$dayLabels = [];
+$dailyBorrows = [];
+
+for ($i = 6; $i >= 0; $i--) {
+    $date = date('Y-m-d', strtotime("-$i days"));
+
+    $dayLabels[] = date('D', strtotime($date));
+    $dailyBorrows[] = $borrowByDay[$date] ?? 0;
 }
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -288,43 +311,47 @@ while ($row = $catStmt->fetch()) {
 <body>
 
     <?php include 'includes/navbar.php' ?>
+    
+<div class="dashboard">
     <div class="stats-grid">
-    <div class="stat-card">
-        <div class="stat-header">
-            <span class="stat-label">Students</span>
-            <span class="material-icons">school</span>
+        <div class="stat-card">
+            <div class="stat-header">
+                <span class="stat-label">Students</span>
+                <span class="material-icons">school</span>
+            </div>
+            <div class="stat-number"><?= $studentCount ?></div>
+            <div class="stat-sub">enrolled</div>
         </div>
-        <div class="stat-number"><?= $studentCount ?></div>
-        <div class="stat-sub">enrolled</div>
-    </div>
 
-    <div class="stat-card">
-        <div class="stat-header">
-            <span class="stat-label">Books</span>
-            <span class="material-icons">auto_stories</span>
+        <div class="stat-card">
+            <div class="stat-header">
+                <span class="stat-label">Books</span>
+                <span class="material-icons">auto_stories</span>
+            </div>
+            <div class="stat-number"><?= $bookCount ?></div>
+            <div class="stat-sub">in collection</div>
         </div>
-        <div class="stat-number"><?= $bookCount ?></div>
-        <div class="stat-sub">in collection</div>
-    </div>
 
-    <div class="stat-card">
-        <div class="stat-header">
-            <span class="stat-label">Borrow records</span>
-            <span class="material-icons">history</span>
+        <div class="stat-card">
+            <div class="stat-header">
+                <span class="stat-label">Borrow records</span>
+                <span class="material-icons">history</span>
+            </div>
+            <div class="stat-number"><?= $totalBorrows ?></div>
+            <div class="stat-sub">all time</div>
         </div>
-        <div class="stat-number"><?= $totalBorrows ?></div>
-        <div class="stat-sub">all time</div>
-    </div>
 
-    <div class="stat-card">
-        <div class="stat-header">
-            <span class="stat-label">Active loans</span>
-            <span class="material-icons">pending_actions</span>
+        <div class="stat-card">
+            <div class="stat-header">
+                <span class="stat-label">Active loans</span>
+                <span class="material-icons">pending_actions</span>
+            </div>
+            <div class="stat-number"><?= $activeBorrows ?></div>
+            <div class="stat-sub">not returned</div>
         </div>
-        <div class="stat-number"><?= $activeBorrows ?></div>
-        <div class="stat-sub">not returned</div>
     </div>
 </div>
+
 <!-- CHARTS -->
 <div class="charts-grid">
 
@@ -340,7 +367,24 @@ while ($row = $catStmt->fetch()) {
         <canvas id="categoryChart" width="400" height="200"></canvas>
     </div>
 
+    <!-- Bar Chart: Borrow Activity -->
+    <div class="chart-card">
+        <div class="chart-title">
+            Borrows · last 7 days
+
+            <span>
+                <span class="material-icons">trending_up</span>
+                activity
+            </span>
+        </div>
+
+        <canvas id="borrowChart" width="400" height="200"></canvas>
+    </div>
 </div>
+
+
+    
+</body>
 <script>
     (function() {
         // Materialize standard palette
@@ -405,7 +449,85 @@ while ($row = $catStmt->fetch()) {
                 }
             }
         });
+        
+    // ---------- BAR: BORROWS LAST 7 DAYS ----------
+
+    const borrowCtx = document
+        .getElementById('borrowChart')
+        .getContext('2d');
+
+    new Chart(borrowCtx, {
+        type: 'bar',
+
+        data: {
+            labels: <?= json_encode($dayLabels) ?>,
+
+            datasets: [{
+                label: 'Borrows',
+                data: <?= json_encode($dailyBorrows) ?>,
+                backgroundColor: colors.blue,
+                borderRadius: 0, // Material flat bars are sharp
+
+                barPercentage: 0.6,
+                categoryPercentage: 0.8
+            }]
+        },
+
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+
+            plugins: {
+                legend: {
+                    display: false
+                },
+
+                tooltip: {
+                    backgroundColor: '#212121',
+                    titleColor: '#ffffff',
+                    bodyColor: '#ffffff',
+                    padding: 10,
+                    cornerRadius: 4,
+
+                    callbacks: {
+                        label: (ctx) => ` ${ctx.raw} borrows`
+                    }
+                }
+            },
+
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: '#eeeeee',
+                        drawBorder: false
+                    },
+                    ticks: {
+                        stepSize: 1,
+                        color: '#757575',
+                        font: {
+                            size: 11,
+                            family: 'Roboto'
+                        }
+                    }
+                },
+
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        color: '#757575',
+                        font: {
+                            size: 11,
+                            family: 'Roboto'
+                        }
+                    }
+                }
+            }
+        }
+    });
     })();
+
 </script>
-</body>
 </html>
